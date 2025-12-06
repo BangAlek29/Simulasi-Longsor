@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulasi Longsor</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    canvas {
+      display: block;
+    }
+
+    /* UI Panel - Draggable & Resizable */
+    #uiPanel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 320px;
+      background: rgba(20, 20, 20, 0.95);
+      color: #fff;
+      border-radius: 10px;
+      z-index: 100;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      resize: both;
+      overflow: hidden;
+      border: 2px solid #4CAF50;
+      min-width: 280px;
+      min-height: 100px;
+    }
+
+    /* Panel Header - Draggable */
+    #panelHeader {
+      background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      border-bottom: 2px solid #4CAF50;
+      user-select: none;
+    }
+
+    #panelTitle {
+      font-weight: bold;
+      font-size: 14px;
+      color: #4CAF50;
+      margin: 0;
+    }
+
+    .panel-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .panel-btn {
+      background: rgba(76, 175, 80, 0.3);
+      border: 1px solid #4CAF50;
+      color: #4CAF50;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .panel-btn:hover {
+      background: rgba(76, 175, 80, 0.6);
+      transform: scale(1.1);
+    }
+
+    .panel-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Panel Content - Scrollable */
+    #panelContent {
+      padding: 16px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+    }
+
+    #panelContent::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #panelContent::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #panelContent::-webkit-scrollbar-thumb {
+      background: #4CAF50;
+      border-radius: 3px;
+    }
+
+    /* Panel Hidden State */
+    #uiPanel.minimized #panelContent {
+      display: none;
+    }
+
+    #uiPanel.minimized {
+      width: auto;
+      height: auto;
+    }
+
+    /* Section Headers */
+    .section-header {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 8px;
+    }
+
+    .section-header.trees {
+      color: #90EE90;
+    }
+
+    .section-header.houses {
+      color: #FFB84D;
+    }
+
+    .section-header.environment {
+      color: #90EE90;
+    }
+
+    .section-header.impact {
+      color: #FFD700;
+    }
+
+    .slider-container {
+      margin-bottom: 16px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .slider-label-name {
+      font-weight: 500;
+      color: #bbb;
+    }
+
+    .slider-label-value {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #444;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #4CAF50;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #4CAF50;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-text {
+      font-size: 11px;
+      color: #aaa;
+      line-height: 1.6;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+      border-left: 2px solid #4CAF50;
+      border-radius: 3px;
+    }
+
+    .info-text strong {
+      color: #4CAF50;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Tombol Simulasi */
+    .simulation-buttons {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .sim-button {
+      flex: 1;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #FF6B35 0%, #D84315 100%);
+      border: 1px solid #FF8A50;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .sim-button:hover {
+      background: linear-gradient(135deg, #FF7A45 0%, #E85C2A 100%);
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(255, 107, 53, 0.4);
+    }
+
+    .sim-button:active {
+      transform: scale(0.98);
+    }
+
+    .sim-button.running {
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      border-color: #FFE34D;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .sim-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Divider */
+    .section-divider {
+      border: none;
+      border-top: 1px solid rgba(76, 175, 80, 0.3);
+      margin: 16px 0;
+    }
+
+    /* Stats Container */
+    .stats-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 8px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+
+    .stat-label {
+      color: #bbb;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      color: #FFD700;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* Resize Handle */
+    #resizeHandle {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, transparent 0%, #4CAF50 100%);
+      cursor: se-resize;
+      border-radius: 0 0 8px 0;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-_kZyO2Zh.js"></script>
+</head>
+<body>
+  <!-- UI Control Panel - Draggable, Resizable, Minimizable -->
+  <div id="uiPanel">
+    <!-- Panel Header -->
+    <div id="panelHeader">
+      <h4 id="panelTitle">⚙️ Kontrol Simulasi</h4>
+      <div class="panel-buttons">
+        <button id="minimizeBtn" class="panel-btn" title="Minimize">−</button>
+        <button id="closeBtn" class="panel-btn" title="Close">×</button>
+      </div>
+    </div>
+
+    <!-- Panel Content - Scrollable -->
+    <div id="panelContent">
+      <!-- Kontrol Pohon -->
+      <h4 class="section-header trees">🌳 Kontrol Pohon</h4>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span class="slider-label-name">Jumlah Pohon</span>
+          <span class="slider-label-value" id="treeCountValue">12</span>
+        </div>
+        <input type="range" id="treeCountSlider" min="1" max="30" value="12">
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-label">
+          <span class="slider-label-name">Radius Area</span>
+          <span class="slider-label-value" id="radiusValue">15</span>
+        </div>
+        <input type="range" id="radiusSlider" min="5" max="40" value="15">
+      </div>
+
+      <div class="info-text">
+        <strong>Kontrol:</strong>
+        🖱️ Klik Kiri: Tambah pohon<br>
+        🖱️ Klik Kanan: Hapus pohon
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Kontrol Rumah -->
+      <h4 class="section-header houses">🏠 Kontrol Rumah</h4>
+      
+      <div class="info-text">
+        <strong>Kontrol Rumah:</strong>
+        🖱️ Ctrl + Klik Kiri: Tambah rumah<br>
+        🖱️ Ctrl + Klik Kanan: Hapus rumah
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Tombol Simulasi -->
+      <h4 class="section-header environment">⚡ Jalankan Simulasi</h4>
+      
+      <div class="simulation-buttons">
+        <button id="startSimulationBtn" class="sim-button" title="Mulai simulasi longsor dan banjir">
+          ▶️ MULAI SIMULASI
+        </button>
+        <button id="stopSimulationBtn" class="sim-button" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); border-color: #66BB6A;" title="Hentikan simulasi" disabled>
+          ⏹️ STOP
+        </button>
+      </div>
+
+      <div class="info-text" id="simulationStatus" style="display:none; color: #FFD700; border-left-color: #FFD700;">
+        <strong>Status Simulasi:</strong>
+        <span id="simulationMessage">Simulasi sedang berjalan...</span>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Indikator Lingkungan -->
+      <h4 class="section-header environment">🌍 Status Lingkungan</h4>
+      
+      <div class="stats-container">
+        <div class="stat-row">
+          <span class="stat-label">Pohon Tertanam</span>
+          <span class="stat-value" id="treeCount" style="color: #90EE90;">30</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Stabilitas Tanah</span>
+          <span class="stat-value" id="stabilityLevel" style="color: #FFD700;">100%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Longsor Aktif</span>
+          <span class="stat-value" id="activeLandslides" style="color: #FF8C00;">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Banjir</span>
+          <span class="stat-value" id="floodCount" style="color: #4da6ff;">0</span>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Statistik Rumah -->
+      <h4 class="section-header impact">🏠 Dampak pada Warga</h4>
+      
+      <div class="stats-container">
+        <div class="stat-row">
+          <span class="stat-label">Total Rumah</span>
+          <span class="stat-value" id="totalHouses">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Sehat</span>
+          <span class="stat-value" id="healthyHouses" style="color: #4CAF50;">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Rusak</span>
+          <span class="stat-value" id="damagedHouses" style="color: #FF6B6B;">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Terendam</span>
+          <span class="stat-value" id="submergedHouses" style="color: #4da6ff;">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resize Handle -->
+    <div id="resizeHandle"></div>
+  </div>
+
+</body>
+</html>

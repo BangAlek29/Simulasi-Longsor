@@ -1,0 +1,28 @@
+{
+  "name": "proyek-akhir-grafkom",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@tweenjs/tween.js": "^25.0.0",
+    "cannon-es": "^0.20.0",
+    "gsap": "^3.13.0",
+    "postprocessing": "^6.38.0",
+    "simplex-noise": "^4.0.3",
+    "stats.js": "^0.17.0",
+    "three": "^0.181.2",
+    "three-mesh-bvh": "^0.9.3"
+  },
+  "devDependencies": {
+    "vite": "^7.2.6"
+  }
+}
